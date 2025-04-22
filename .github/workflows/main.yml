@@ -1,0 +1,48 @@
+name: Mirror to Personal Repo via SSH
+
+on:
+  push:
+    branches:
+      - main  # Adjust if using 'master' instead of 'main'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}  # Private key to authenticate via SSH
+
+    steps:
+      # Step 1: Checkout the source repository (payment-system)
+      - name: Checkout Source Repo (paycrypt-tech)
+        uses: actions/checkout@v4
+        with:
+          ref: main  # Adjust if you're using 'master' or other branches
+
+      # Step 2: Setup SSH for authentication
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      # Step 3: Clone the source repo over SSH
+      - name: Clone Source Repo with SSH
+        run: |
+          git clone --bare git@github.com:paycrypt-tech/payment-system.git source-repo
+          cd source-repo
+          git remote -v  # Check remotes
+
+      # Step 4: Push to the personal repo over SSH
+      - name: Push to Personal Repo (meyank-ssh/docs)
+        run: |
+          cd source-repo
+          git remote add personal git@github.com:meyank-ssh/docs.git
+          git push --mirror personal
+          git remote -v  # Check remotes
+
+      # Optional Step: Clean up local repo (after pushing)
+      - name: Clean up
+        run: |
+          rm -rf source-repo
