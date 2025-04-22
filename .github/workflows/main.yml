@@ -30,7 +30,7 @@ jobs:
       # Step 3: Clone the source repo over SSH
       - name: Clone Source Repo with SSH
         run: |
-          git clone --bare git@github.com:paycrypt-tech/payment-system.git source-repo
+          git clone --bare git@github.com:paycrypt-tech/frontend.git source-repo
           cd source-repo
           git remote -v  # Check remotes
 
